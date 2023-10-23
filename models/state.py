@@ -21,7 +21,7 @@ class State(BaseModel, Base):
         @property
         def cities(self):
             """ Returns a list of City instances where the state_id
-                matches the id of the current State,leveraging 
+                matches the id of the current State,leveraging
                 the FileStorage relationship between State and City
             """
             from models import storage
