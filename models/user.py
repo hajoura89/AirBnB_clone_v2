@@ -9,12 +9,16 @@ from models.review import Review
 
 
 class User(BaseModel, Base):
-    """This is the class for user
+    """
+    This is the class for user
     Attributes:
-        email: email address
-        password: password for you login
-        first_name: first name
-        last_name: last name
+        __tablename__ (str): The table name  to store the users
+        email (sqlalchemy String): The email address
+        password (sqlalchemy String): The password
+        first_name (sqlalchemy String): The first name
+        last_name (sqlalchemy String): The last name
+        places (sqlalchemy relationship): The User-Place relationship
+        reviews (sqlalchemy relationship): The User-Review relationship
     """
     __tablename__ = "users"
     email = Column(String(128), nullable=False)

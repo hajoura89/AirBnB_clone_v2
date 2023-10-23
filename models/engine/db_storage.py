@@ -2,7 +2,7 @@
 """database storage engine"""
 
 from models.amenity import Amenity
-from models.base_model import Base
+from models.base_model import BaseModel, Base
 from models.city import City
 from models.place import Place
 from models.review import Review
@@ -12,13 +12,7 @@ import os
 from os import getenv
 import sqlalchemy
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
-
-if getenv('HBNB_TYPE_STORAGE') == 'db':
-    from models.place import place_amenity
-
-classes = {"User": User, "State": State, "City": City,
-           "Amenity": Amenity, "Place": Place, "Review": Review}
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 
 
 class DBStorage:
@@ -41,21 +35,28 @@ class DBStorage:
     def all(self, cls=None):
         """query on the current database session"""
         dict = {}
+
         if cls is None:
-            for c in classes.values():
-                objs = self.__session.query(c).all()
-                for obj in objs:
-                    key = obj.__class__.__name__ + '.' + obj.id
-                    dict[key] = obj
+            objects_list = self.__session.query(State).all()
+            objects_list.extend(self.__session.query(City).all())
+            objects_list.extend(self.__session.query(User).all())
+            objects_list.extend(self.__session.query(Place).all())
+            objects_list.extend(self.__session.query(Review).all())
+            objects_list.extend(self.__session.query(Amenity).all())
         else:
-            objs = self.__session.query(cls).all()
-            for obj in objs:
-                key = obj.__class__.__name__ + '.' + obj.id
-                dict[key] = obj
+            if type(cls) == str:
+                cls = eval(cls)
+            objects_list = self.__session.query(cls).all()
+
+        for obj in objects_list:
+            key = "{}.{}".format(type(obj).__name__, obj.id)
+            dict[key] = obj
+
         return dict
 
     def new(self, obj):
         """add an obj to the current database session"""
+        # self.__session.add(obj)
         if obj is not None:
             try:
                 self.__session.add(obj)
@@ -73,16 +74,18 @@ class DBStorage:
         """ deletes from the current database session the obj
             if not None
         """
-        if obj is not None:
-            self.__session.query(type(obj)).filter(
-                type(obj).id == obj.id).delete()
+        # if obj is not None:
+        # self.__session.query(type(obj)).filter(
+        # type(obj).id == obj.id).delete()
+        if obj:
+            self.__session.delete(obj)
 
     def reload(self):
         """initialise a database session"""
         Base.metadata.create_all(self.__engine)
-        session_factory = sessionmaker(bind=self.__engine,
-                                       expire_on_commit=False)
-        self.__session = scoped_session(session_factory)
+        _session = sessionmaker(bind=self.__engine,
+                                expire_on_commit=False)
+        self.__session = scoped_session(_session)
 
     def close(self):
         """closing current session"""
