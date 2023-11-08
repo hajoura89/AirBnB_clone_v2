@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-A fabric script that generates a .tgz archive from 
+A fabric script that generates a .tgz archive from
 the contents of the web_static using the function do_pack
 """
 import os
